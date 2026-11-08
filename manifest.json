@@ -1,0 +1,41 @@
+{
+  "manifest_version": "0.3",
+  "name": "sam-procurement-mcp",
+  "version": "0.2.1",
+  "display_name": "Federal Procurement Intelligence",
+  "description": "Find SAM.gov opportunities, compare USAspending awards, verify public registrations, and track notice changes locally.",
+  "author": { "name": "SAM Procurement MCP contributors" },
+  "license": "MIT",
+  "server": {
+    "type": "node",
+    "entry_point": "src/cli.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/src/cli.js"],
+      "env": {
+        "SAM_GOV_API_KEY": "${user_config.sam_api_key}",
+        "SAM_MCP_DEMO": "${user_config.demo}"
+      }
+    }
+  },
+  "compatibility": {
+    "runtimes": { "node": ">=20.19.0" }
+  },
+  "user_config": {
+    "sam_api_key": {
+      "type": "string",
+      "title": "SAM.gov public API key",
+      "description": "Get this key from Account Details on SAM.gov. Leave blank for USAspending or demo mode.",
+      "sensitive": true,
+      "required": false,
+      "default": ""
+    },
+    "demo": {
+      "type": "boolean",
+      "title": "Try the fictional demo",
+      "description": "Use synthetic data with no API key or network requests.",
+      "required": false,
+      "default": false
+    }
+  }
+}

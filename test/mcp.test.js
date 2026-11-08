@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { request } from 'node:http';
 import { once } from 'node:events';
+import { setTimeout as delay } from 'node:timers/promises';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -162,7 +163,12 @@ test('running Windows stdio server sees a secure key save and removal without re
   assert.equal((await call(client, 'procurement_status')).samConnectionStatus, 'missing_key');
   const vault = createCredentials(home, { env: {} });
   await vault.save(synthetic, async () => {});
-  const configured = await call(client, 'procurement_status');
+  let configured;
+  for (let attempt = 0; attempt < 20; attempt++) {
+    configured = await call(client, 'procurement_status');
+    if (configured.samCredentialSource === 'Windows DPAPI') break;
+    await delay(250);
+  }
   assert.equal(configured.samCredentialSource, 'Windows DPAPI');
   assert.equal(configured.samConnectionStatus, 'unverified');
   assert(!JSON.stringify(configured).includes(synthetic));

@@ -26,14 +26,16 @@ try {
   run(process.env.npm_execpath, ['pack', '--ignore-scripts', '--silent', '--pack-destination', dist]);
   // MCPB is a ZIP with a root manifest and a self-contained server.
   const files = Object.create(null);
-  for (const entry of await readdir(stage, { recursive: true, withFileTypes: true })) {
+  const entries = await readdir(stage, { recursive: true, withFileTypes: true });
+  entries.sort((a, b) => `${a.parentPath}/${a.name}`.localeCompare(`${b.parentPath}/${b.name}`));
+  for (const entry of entries) {
     if (!entry.isFile()) continue;
     const path = join(entry.parentPath, entry.name);
     const name = relative(stage, path).split(sep).join('/');
     if (name === 'package-lock.json' || name === 'node_modules/.package-lock.json' || name.includes('/.bin/')) continue;
     files[name] = await readFile(path);
   }
-  await writeFile(join(dist, 'sam-procurement-mcp.mcpb'), zipSync(files));
+  await writeFile(join(dist, 'sam-procurement-mcp.mcpb'), zipSync(files, { mtime: new Date(1980, 0, 1) }));
   console.log('sam-procurement-mcp.mcpb');
 } finally {
   await rm(stage, { recursive: true, force: true });

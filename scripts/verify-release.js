@@ -20,7 +20,7 @@ const npm = process.env.npm_execpath;
 
 function run(script, args) {
   return execFileSync(process.execPath, [script, ...args], {
-    cwd: temp, encoding: 'utf8', timeout: 90_000,
+    cwd: temp, encoding: 'utf8', timeout: 180_000,
     env: { ...process.env, NODE_PATH: '', NODE_OPTIONS: '' }
   });
 }

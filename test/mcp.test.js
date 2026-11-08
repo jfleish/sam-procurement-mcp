@@ -158,7 +158,7 @@ test('running Windows stdio server sees a secure key save and removal without re
   const synthetic = 'synthetic_win32_key_test';
   client = await start(new StdioClientTransport({
     command: process.execPath, args: [cli], stderr: 'pipe',
-    env: { SAM_MCP_HOME: home, SAM_MCP_DEMO: 'false', SAM_GOV_API_KEY: '' }
+    env: { ...process.env, SAM_MCP_HOME: home, SAM_MCP_DEMO: 'false', SAM_GOV_API_KEY: '' }
   }));
   assert.equal((await call(client, 'procurement_status')).samConnectionStatus, 'missing_key');
   const vault = createCredentials(home, { env: {} });

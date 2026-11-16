@@ -16,7 +16,7 @@ const pkg = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
 const temp = await mkdtemp(join(await realpath(tmpdir()), 'sam-mcp-release-'));
 const relation = relative(await realpath(root), temp);
 const dist = join(root, 'dist');
-const npm = process.env.npm_execpath;
+const npm = process.env.npm_execpath || join(dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js');
 
 function run(script, args) {
   return execFileSync(process.execPath, [script, ...args], {

@@ -1,54 +1,99 @@
 # SAM Procurement MCP
 
-Local MCP server for researching federal procurement opportunities. It queries live SAM.gov notices (with your personal SAM.gov API key) and public USAspending award data. It can also keep a private, local notice shortlist.
+Local MCP server for federal procurement research. It provides 13 tools for SAM.gov opportunities, public USAspending awards, public entity lookups, and a private local notice pipeline.
 
-No service is hosted by this project. There is no telemetry, database, or embedded AI API.
+- Live SAM.gov opportunity and entity tools use your personal SAM.gov public API key.
+- USAspending award tools are public and need no key.
+- Demo mode uses fictional data, makes no network requests, and needs no key.
+- Nothing is hosted by this project; there is no telemetry, database, or embedded AI API.
 
-## Install
+## Quick start
 
-Requires Node.js 20.19 or later (Node 22 or 24 LTS recommended).
+Requires [Node.js 20.19+](https://nodejs.org/), with Node 22 or 24 LTS recommended.
 
-### From npm
-
-```sh
-npm install -g sam-procurement-mcp
-sam-procurement-mcp --version
-```
-
-### From a release file
-
-Install the matching `sam-procurement-mcp-0.2.1.tgz` offline:
+Try the complete server without credentials:
 
 ```sh
-npm install -g --offline --ignore-scripts ./sam-procurement-mcp-0.2.1.tgz
-sam-procurement-mcp --version
+npx -y github:jfleish/sam-procurement-mcp --demo
 ```
 
-## One-time SAM.gov setup
-
-USAspending tools work without a SAM.gov key. Live SAM.gov opportunity searches and public entity lookup require your personal public API key from [SAM.gov Account Details](https://sam.gov/workspace/profile/account-details).
-
-Run this in an interactive terminal on the computer that will run the MCP client:
+When the package is available on npm, the shorter command is:
 
 ```sh
-sam-procurement-mcp setup
+npx -y sam-procurement-mcp --demo
 ```
 
-The key is entered through a hidden prompt, verified once, then saved only in the operating system's secure store: Windows DPAPI, macOS Keychain, or Linux Secret Service. It is never placed in MCP tool arguments or the project configuration.
-
-Useful commands:
+To install the current GitHub version globally instead:
 
 ```sh
-sam-procurement-mcp doctor --live   # check setup and make live requests
-sam-procurement-mcp validate-key    # test the current SAM.gov credential
-sam-procurement-mcp forget-key      # remove the locally saved credential
+npm install -g github:jfleish/sam-procurement-mcp
+sam-procurement-mcp --demo
 ```
 
-`SAM_GOV_API_KEY` is an optional process-environment override for managed-client settings. It takes precedence over the securely saved key; do not put it in shell history, MCP JSON, source files, or chat.
+The demo is synthetic and fictional. Do not use it as evidence for a bid, eligibility decision, or market conclusion.
 
-## Connect a client
+## Configure SAM.gov
 
-The server uses local stdio. After global installation, configure a supported local MCP client with:
+1. Create or copy your personal public API key from [SAM.gov Account Details](https://sam.gov/workspace/profile/account-details).
+2. On the same computer and Windows/macOS/Linux user account that runs your MCP client, run:
+
+   ```sh
+   sam-procurement-mcp setup
+   ```
+
+   If you did not install globally, use `npx -y github:jfleish/sam-procurement-mcp setup`.
+
+The key is validated once and saved only in the operating system's secure store: Windows DPAPI, macOS Keychain, or Linux Secret Service. It is never an MCP tool argument or client config value.
+
+Useful checks:
+
+```sh
+sam-procurement-mcp doctor --live
+sam-procurement-mcp validate-key
+sam-procurement-mcp forget-key
+```
+
+`SAM_GOV_API_KEY` is an optional environment override for managed environments. It takes precedence over the secure store. Do not put it in shell history, MCP JSON, source files, or chat. USAspending remains available without it.
+
+## Connect an MCP client
+
+The server uses local stdio. The default command below uses the installed binary and live mode. For a no-key walkthrough, add `"--demo"` to `args`.
+
+### Codex
+
+```sh
+codex mcp add procurement -- sam-procurement-mcp
+codex mcp list
+```
+
+If the package is not installed globally:
+
+```sh
+codex mcp add procurement -- npx -y github:jfleish/sam-procurement-mcp
+```
+
+On Windows, if `npx` is not found by the client, use `cmd /c` in the command configuration or install globally and use `sam-procurement-mcp`.
+
+### Claude Code
+
+```sh
+claude mcp add --transport stdio procurement -- sam-procurement-mcp
+claude mcp list
+```
+
+GitHub launcher:
+
+```sh
+claude mcp add --transport stdio procurement -- npx -y github:jfleish/sam-procurement-mcp
+```
+
+Use `--scope user` if the server should be available in every Claude Code project. Run `/mcp` inside Claude Code to inspect the connection.
+
+### Claude Desktop
+
+Open Settings → Developer → Edit Config. The file is `~/Library/Application Support/Claude/claude_desktop_config.json` on macOS and `%APPDATA%\\Claude\\claude_desktop_config.json` on Windows.
+
+macOS/Linux:
 
 ```json
 {
@@ -61,40 +106,75 @@ The server uses local stdio. After global installation, configure a supported lo
 }
 ```
 
-This works with Codex, ChatGPT desktop on a local Codex host, Claude Code, and other stdio-compatible MCP clients. For Claude Desktop, build or download `sam-procurement-mcp.mcpb` and install it as a local extension; its API-key setting is marked sensitive.
+Windows, using the GitHub launcher:
 
-Use `--demo` in the arguments for a credential-free walkthrough. Demo data is fictional and performs no network requests.
+```json
+{
+  "mcpServers": {
+    "procurement": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "github:jfleish/sam-procurement-mcp"]
+    }
+  }
+}
+```
+
+For demo mode, append `"--demo"` to `args`. Fully quit and restart Claude Desktop after saving. If installed globally, Windows can use `"command": "sam-procurement-mcp"` with an empty `args` array.
+
+### Other stdio clients
+
+Use this equivalent configuration wherever the client accepts an MCP command and argument list:
+
+```json
+{
+  "command": "npx",
+  "args": ["-y", "github:jfleish/sam-procurement-mcp"]
+}
+```
+
+For a client that cannot launch local processes, use the optional loopback transport:
+
+```sh
+sam-procurement-mcp serve-http --demo --port 3847
+```
+
+Connect the client to `http://127.0.0.1:3847/mcp`. It binds to loopback and exposes read-only research tools only; do not expose it publicly without a separately secured tunnel.
 
 ## Example prompts
+
+```text
+Use the demo data to show me an opportunity, its deadline status, and comparable awards.
+```
 
 ```text
 Find open cybersecurity opportunities under NAICS 541512 in Virginia.
 ```
 
 ```text
-Research this notice, list its deadline with time zone and submission requirements, then compare similar awards. [notice ID]
+Research notice <notice ID>, list its deadline with time zone and submission requirements, then compare similar awards.
 ```
 
 ```text
 Who received the largest prime contracts under PSC DA01 in the last two years?
 ```
 
-## Tools
+## Tools and data behavior
 
-The server exposes 13 tools:
+The 13 tools are: `search_opportunities`, `get_opportunity`, `research_opportunity`, `search`, `fetch`, `search_contract_awards`, `analyze_contract_market`, `lookup_public_entity`, `procurement_status`, `save_pipeline_notice`, `list_pipeline`, `check_pipeline_notice`, and `remove_pipeline_notice`.
 
-- `search_opportunities`, `get_opportunity`, `research_opportunity`, `search`, `fetch`
-- `search_contract_awards`, `analyze_contract_market`
-- `lookup_public_entity`, `procurement_status`
-- `save_pipeline_notice`, `list_pipeline`, `check_pipeline_notice`, `remove_pipeline_notice`
+SAM.gov searches default to the previous 30 days and accept at most a 365-day posting window. USAspending searches default to two years and accept at most 10 years. Requests time out after 15 seconds; transient USAspending gateway errors receive one retry. Results include source URLs where available. Always check official notices, amendments, attachments, eligibility, and submission instructions before acting.
 
-SAM.gov searches default to the previous 30 days and accept at most a 365-day posting window. USAspending searches default to two years and accept at most 10 years. Requests time out after 15 seconds; transient USAspending gateway errors receive one retry; SAM.gov rate-limit and authentication failures are returned as clear, key-free errors. Results include source URLs where available. Check official notices, amendments, attachments, eligibility, and submission instructions before acting.
+Saved notice baselines are private local JSON files. The default data directory is OS-specific; set `SAM_MCP_HOME` for a separate local profile. Demo and live pipelines are separate. If a legacy plaintext key file is found, setup must migrate it before SAM.gov calls and removes it after successful secure storage.
 
-## Local data and privacy
+## Troubleshooting
 
-Saved notice baselines are private local JSON files. The default data directory is OS-specific; set `SAM_MCP_HOME` to select a separate local profile. Demo and live pipelines are separate. If a legacy plaintext key file is detected, the CLI requires migration before SAM.gov calls; successful setup removes it.
-
-The optional `serve-http` command listens on loopback only and exposes read-only research tools. It is intended for a separately secured local tunnel, not public deployment.
+- Run `sam-procurement-mcp --help` and `sam-procurement-mcp doctor --live`.
+- If the client cannot find the command, install globally or use the `npx` GitHub configuration above. On Windows, wrap `npx` as `cmd /c npx ...`.
+- If SAM.gov says setup is required, run `sam-procurement-mcp setup` in the same OS user account as the MCP client. `validate-key` checks the stored credential without revealing it.
+- If Linux secure storage fails, install and unlock `secret-tool` / Secret Service.
+- If Claude Desktop does not show the tools, check its [MCP logs and restart guidance](https://modelcontextprotocol.io/docs/quickstart/user#troubleshooting).
+- For client behavior, see the [official MCP server examples](https://github.com/modelcontextprotocol/servers#using-an-mcp-client) and [Claude Desktop quickstart](https://modelcontextprotocol.io/docs/quickstart/user).
+- Report reproducible issues at [GitHub Issues](https://github.com/jfleish/sam-procurement-mcp/issues).
 
 ## Build and verify a release
 
@@ -105,7 +185,7 @@ npm run release:build
 npm run release:verify
 ```
 
-The build creates `dist/sam-procurement-mcp-0.2.1.tgz` and `dist/sam-procurement-mcp.mcpb`. The verifier installs both outside the checkout using an empty npm cache and smoke-tests the 13-tool demo server plus the loopback HTTP surface. Add `-- --live` to verify live USAspending and, only when a key is supplied through the verifier environment, authenticated SAM.gov paths.
+The build creates an npm tarball and Claude Desktop `.mcpb` bundle. The verifier installs the tarball outside the checkout with an empty npm cache and smoke-tests the 13-tool demo server plus loopback HTTP surface. Add `-- --live` to verify live USAspending and authenticated SAM.gov paths when `SAM_GOV_API_KEY` is supplied to the verifier environment.
 
 ## License
 

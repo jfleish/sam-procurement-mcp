@@ -15,6 +15,8 @@ function run(script, args) {
   if (result.status !== 0) throw new Error(`Build command failed with status ${result.status}.`);
 }
 
+const npm = process.env.npm_execpath || join(dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js');
+
 try {
   for (const name of ['src', 'package.json', 'package-lock.json', 'manifest.json', 'README.md', 'LICENSE']) {
     await cp(join(root, name), join(stage, name), { recursive: true });
@@ -22,8 +24,8 @@ try {
   const manifest = JSON.parse(await readFile(join(root, 'manifest.json'), 'utf8'));
   const pkg = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
   if (manifest.version !== pkg.version) throw new Error('Manifest and npm package versions must match.');
-  run(process.env.npm_execpath, ['ci', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund']);
-  run(process.env.npm_execpath, ['pack', '--ignore-scripts', '--silent', '--pack-destination', dist]);
+  run(npm, ['ci', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund']);
+  run(npm, ['pack', '--ignore-scripts', '--silent', '--pack-destination', dist]);
   // MCPB is a ZIP with a root manifest and a self-contained server.
   const files = Object.create(null);
   const entries = await readdir(stage, { recursive: true, withFileTypes: true });

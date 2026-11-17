@@ -14,16 +14,17 @@ Requires [Node.js 20.19+](https://nodejs.org/), with Node 22 or 24 LTS recommend
 Try the complete server without credentials:
 
 ```sh
-npx -y github:jfleish/sam-procurement-mcp --demo
-```
-
-When the package is available on npm, the shorter command is:
-
-```sh
 npx -y sam-procurement-mcp --demo
 ```
 
-To install the current GitHub version globally instead:
+Install globally if you prefer a stable command for MCP client configuration:
+
+```sh
+npm install -g sam-procurement-mcp
+sam-procurement-mcp --demo
+```
+
+GitHub fallback for unreleased changes:
 
 ```sh
 npm install -g github:jfleish/sam-procurement-mcp
@@ -41,7 +42,7 @@ The demo is synthetic and fictional. Do not use it as evidence for a bid, eligib
    sam-procurement-mcp setup
    ```
 
-   If you did not install globally, use `npx -y github:jfleish/sam-procurement-mcp setup`.
+   If you did not install globally, use `npx -y sam-procurement-mcp setup`.
 
 The key is validated once and saved only in the operating system's secure store: Windows DPAPI, macOS Keychain, or Linux Secret Service. It is never an MCP tool argument or client config value.
 
@@ -69,7 +70,7 @@ codex mcp list
 If the package is not installed globally:
 
 ```sh
-codex mcp add procurement -- npx -y github:jfleish/sam-procurement-mcp
+codex mcp add procurement -- npx -y sam-procurement-mcp
 ```
 
 On Windows, if `npx` is not found by the client, use `cmd /c` in the command configuration or install globally and use `sam-procurement-mcp`.
@@ -81,10 +82,10 @@ claude mcp add --transport stdio procurement -- sam-procurement-mcp
 claude mcp list
 ```
 
-GitHub launcher:
+npx launcher:
 
 ```sh
-claude mcp add --transport stdio procurement -- npx -y github:jfleish/sam-procurement-mcp
+claude mcp add --transport stdio procurement -- npx -y sam-procurement-mcp
 ```
 
 Use `--scope user` if the server should be available in every Claude Code project. Run `/mcp` inside Claude Code to inspect the connection.
@@ -106,14 +107,14 @@ macOS/Linux:
 }
 ```
 
-Windows, using the GitHub launcher:
+Windows, using npx:
 
 ```json
 {
   "mcpServers": {
     "procurement": {
       "command": "cmd",
-      "args": ["/c", "npx", "-y", "github:jfleish/sam-procurement-mcp"]
+      "args": ["/c", "npx", "-y", "sam-procurement-mcp"]
     }
   }
 }
@@ -128,7 +129,7 @@ Use this equivalent configuration wherever the client accepts an MCP command and
 ```json
 {
   "command": "npx",
-  "args": ["-y", "github:jfleish/sam-procurement-mcp"]
+  "args": ["-y", "sam-procurement-mcp"]
 }
 ```
 
@@ -169,7 +170,7 @@ Saved notice baselines are private local JSON files. The default data directory 
 ## Troubleshooting
 
 - Run `sam-procurement-mcp --help` and `sam-procurement-mcp doctor --live`.
-- If the client cannot find the command, install globally or use the `npx` GitHub configuration above. On Windows, wrap `npx` as `cmd /c npx ...`.
+- If the client cannot find the command, install globally or use the npm `npx` configuration above. On Windows, wrap `npx` as `cmd /c npx ...`.
 - If SAM.gov says setup is required, run `sam-procurement-mcp setup` in the same OS user account as the MCP client. `validate-key` checks the stored credential without revealing it.
 - If Linux secure storage fails, install and unlock `secret-tool` / Secret Service.
 - If Claude Desktop does not show the tools, check its [MCP logs and restart guidance](https://modelcontextprotocol.io/docs/quickstart/user#troubleshooting).

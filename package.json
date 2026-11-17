@@ -8,12 +8,16 @@
     "node": ">=20.19"
   },
   "bin": {
-    "sam-procurement-mcp": "./src/cli.js"
+    "sam-procurement-mcp": "src/cli.js"
   },
   "files": [
     "src"
   ],
-  "bundleDependencies": true,
+  "bundleDependencies": [
+    "@modelcontextprotocol/sdk",
+    "parse5",
+    "zod"
+  ],
   "scripts": {
     "test": "node --test test/adapters.test.js test/credentials.test.js test/mcp.test.js",
     "release:build": "node scripts/bundle.js",
